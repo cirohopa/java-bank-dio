@@ -23,11 +23,21 @@ public class InvestmentWallet extends Wallet {
         addMoney(account.reduceMoney(amount), getService(), "investimento");
     }
 
-    public void updateAmount (final long percent){
+    public void updateAmount(final long percent) {
+        // 1. Calcula o valor a ser adicionado (já estava certo)
         var amount = getFunds() * percent / 100;
-        var history = new MoneyAudit(UUID.randomUUID(), getService(), "rendimentos", OffsetDateTime.now());
-        var money = Stream.generate(() -> new Money(history)). limit(amount). toList();
-        this.money.addAll(money);
+
+        // Se não houver rendimento, não faz nada
+        if (amount <= 0) {
+            return;
+        }
+
+        // 2. Gera a lista de novos objetos Money (da forma correta, sem histórico)
+        var newMoney = Stream.generate(Money::new).limit(amount).toList();
+
+        // 3. Usa o método addMoney da classe Wallet para adicionar o dinheiro
+        // E registrar a transação no histórico da carteira (essa é a parte chave)
+        addMoney(newMoney, getService(), "rendimentos");
     }
 
 }
