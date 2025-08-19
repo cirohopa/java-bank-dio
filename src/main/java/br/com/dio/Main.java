@@ -50,7 +50,7 @@ public class Main {
                 case 4-> deposit();
                 case 5-> withdraw();
                 case 6-> transferToAccount();
-                case 7-> incInvestment();
+                case 7-> investMore();
                 case 8-> rescueInvestment();
                 case 9-> accountRepository.list().forEach(System.out::println);
                 case 10-> investmentRepository.list().forEach(System.out::println);
@@ -140,31 +140,32 @@ public class Main {
         System.out.println("Conta de investimento criada com sucesso!");
     }
 
-    private static void incInvestment(){
+    private static void investMore() { // Renomeado para mais clareza
         System.out.println("Digite a chave pix da conta para investimento: ");
         var pix = sc.next();
-        System.out.println("Digite o valor do investimendo: ");
+        System.out.println("Digite o valor do investimento: ");
         var amount = sc.nextLong();
 
         try {
-            accountRepository.deposit(pix,amount);
-        } catch (AccountNotFoundException ex){
-            System.out.println(ex.getMessage());
+            investmentRepository.investMore(pix, amount);
+            System.out.println("Investimento realizado com sucesso!");
+        } catch (RuntimeException ex) { // Captura exceções como AccountNotFound, etc.
+            System.out.println("Erro ao realizar investimento: " + ex.getMessage());
         }
     }
 
-    private static void rescueInvestment(){
+    private static void rescueInvestment() {
         System.out.println("Digite a chave pix para resgate do investimento: ");
         var pix = sc.next();
         System.out.println("Digite o valor do resgate: ");
         var amount = sc.nextLong();
 
         try {
-            investmentRepository.rescueInvestment(pix,amount);
-        } catch (NoFundsEnoughException | AccountNotFoundException ex){
-            System.out.println(ex.getMessage());
+            investmentRepository.rescueInvestment(pix, amount);
+            System.out.println("Resgate realizado com sucesso!");
+        } catch (RuntimeException ex) {
+            System.out.println("Erro ao realizar resgate: " + ex.getMessage());
         }
-
     }
 
     private static void checkHistory() {
