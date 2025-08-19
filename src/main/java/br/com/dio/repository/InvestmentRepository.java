@@ -1,3 +1,5 @@
+// Em InvestmentRepository.java - CÓDIGO CORRIGIDO
+
 package br.com.dio.repository;
 
 import br.com.dio.exception.AccountWithInvestmentException;
@@ -18,14 +20,14 @@ public class InvestmentRepository {
     private final List<Investment> investments = new ArrayList<>();
     private final List<InvestmentWallet> wallets = new ArrayList<>();
 
-    public Investment create(final long tax, final long initialFunds){
+    public Investment create(final long tax, final long initialFunds) {
         this.nextId++;
         var invesment = new Investment(this.nextId, tax, initialFunds);
         investments.add(invesment);
         return invesment;
     }
 
-    public InvestmentWallet initInvestment(final AccountWallet account, final long id){
+    public InvestmentWallet initInvestment(final AccountWallet account, final long id) {
         if (!wallets.isEmpty()) {
             var accountsInUse = wallets.stream().map(InvestmentWallet::getAccount).toList();
             if (accountsInUse.contains(account)) {
@@ -35,33 +37,51 @@ public class InvestmentRepository {
 
         var investment = findById(id);
         checkFundsForTransaction(account, investment.initialFunds());
+        // A criação da carteira já realiza a primeira transação, conforme corrigimos em InvestmentWallet.java
         var wallet = new InvestmentWallet(investment, account, investment.initialFunds());
+        wallets.add(wallet); // Adiciona a nova carteira à lista
         return wallet;
     }
 
-    public InvestmentWallet deposit(final String pix, final long funds){
-        var wallet = findWalletByAccountPix(pix);
-        wallet.addMoney(wallet.getAccount().reduceMoney(funds), wallet.getService(), "Investimento");
-        return wallet;
+    // O nome "deposit" é confuso, significa "investir mais dinheiro"
+    public InvestmentWallet investMore(final String pix, final long funds) {
+        var investmentWallet = findWalletByAccountPix(pix);
+        var sourceAccount = investmentWallet.getAccount();
+        checkFundsForTransaction(sourceAccount, funds);
+
+        // LÓGICA CORRIGIDA:
+        // 1. Saca da conta principal
+        var moneyToInvest = sourceAccount.withdraw(funds, "Aplicação adicional no Investimento ID: " + investmentWallet.getInvestment().id());
+        // 2. Recebe na carteira de investimento
+        investmentWallet.receive(moneyToInvest, "Aplicação adicional");
+
+        return investmentWallet;
     }
 
-    public InvestmentWallet withDraw(final String pix, final long funds){
-        var wallet = findWalletByAccountPix(pix);
-        checkFundsForTransaction(wallet, funds);
-        wallet.getAccount().addMoney(wallet.reduceMoney(funds), wallet.getService(), "Saque de investimentos");
+    // O nome "withDraw" significa "resgatar o investimento"
+    public InvestmentWallet rescueInvestment(final String pix, final long funds) {
+        var investmentWallet = findWalletByAccountPix(pix);
+        checkFundsForTransaction(investmentWallet, funds);
+        var destinationAccount = investmentWallet.getAccount();
 
-        if (wallet.getFunds() == 0){
-            wallets.remove(wallet);
+        // LÓGICA CORRIGIDA:
+        // 1. Saca da carteira de investimento
+        var rescuedMoney = investmentWallet.withdraw(funds, "Resgate de investimento");
+        // 2. Recebe na conta principal
+        destinationAccount.receive(rescuedMoney, "Valor resgatado do Investimento ID: " + investmentWallet.getInvestment().id());
+
+        if (investmentWallet.getFunds() == 0) {
+            wallets.remove(investmentWallet);
         }
 
-        return wallet;
+        return investmentWallet;
     }
 
-    public void updateAmount(){
+    public void updateAmount() {
         wallets.forEach(w -> w.updateAmount(w.getInvestment().tax()));
     }
 
-    public Investment findById(final long id){
+    public Investment findById(final long id) {
         return investments.stream().filter(a -> a.id() == id)
                 .findFirst()
                 .orElseThrow(
@@ -69,7 +89,7 @@ public class InvestmentRepository {
                 );
     }
 
-    public InvestmentWallet findWalletByAccountPix(final String pix){
+    public InvestmentWallet findWalletByAccountPix(final String pix) {
         return wallets.stream()
                 .filter(w -> w.getAccount().getPix().contains(pix))
                 .findFirst()
@@ -78,11 +98,11 @@ public class InvestmentRepository {
                 );
     }
 
-    public List<InvestmentWallet> listWallets(){
+    public List<InvestmentWallet> listWallets() {
         return this.wallets;
     }
 
-    public List<Investment> list(){
+    public List<Investment> list() {
         return this.investments;
     }
 

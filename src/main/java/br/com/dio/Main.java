@@ -93,6 +93,7 @@ public class Main {
 
         try {
             accountRepository.deposit(pix,amount);
+            System.out.println("Depósito realizado com sucesso!");
         } catch (AccountNotFoundException ex){
             System.out.println(ex.getMessage());
         }
@@ -106,6 +107,7 @@ public class Main {
 
         try {
             accountRepository.withDraw(pix,amount);
+            System.out.println("Saque realizado com sucesso!");
         } catch (NoFundsEnoughException | AccountNotFoundException ex){
             System.out.println(ex.getMessage());
         }
@@ -122,6 +124,7 @@ public class Main {
 
         try {
             accountRepository.transferMoney(source, target, amount);
+            System.out.println("Transferência realizada com sucesso!");
         } catch (AccountNotFoundException ex){
             System.out.println(ex.getMessage());
         }
@@ -157,16 +160,15 @@ public class Main {
         var amount = sc.nextLong();
 
         try {
-            investmentRepository.withDraw(pix,amount);
+            investmentRepository.rescueInvestment(pix,amount);
         } catch (NoFundsEnoughException | AccountNotFoundException ex){
             System.out.println(ex.getMessage());
         }
 
     }
 
-    private static void checkHistory(){
+    private static void checkHistory() {
         System.out.println("Digite a chave pix da conta para ver o extrato: ");
-
         var pix = sc.next();
         AccountWallet wallet;
 
@@ -174,14 +176,17 @@ public class Main {
             wallet = accountRepository.findByPix(pix);
             var audit = wallet.getFinancialTransactions();
 
-            var group = audit.stream()
-                    .collect(Collectors.groupingBy(t -> t.createdAt().truncatedTo(ChronoUnit.SECONDS)));
+            if (audit.isEmpty()) {
+                System.out.println("Não há transações no histórico desta conta.");
+            } else {
+                System.out.println("---- EXTRATO DA CONTA: " + pix + " ----");
+                audit.forEach(System.out::println); // LINHA ADICIONADA PARA IMPRIMIR
+                System.out.println("---------------------------------");
+            }
 
-
-        } catch (AccountNotFoundException ex){
+        } catch (AccountNotFoundException ex) {
             System.out.println(ex.getMessage());
         }
-
     }
 
 }

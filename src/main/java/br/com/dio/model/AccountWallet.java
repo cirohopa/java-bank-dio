@@ -1,4 +1,3 @@
-// Em AccountWallet.java - Código Refatorado
 package br.com.dio.model;
 
 import lombok.Getter;
@@ -17,13 +16,8 @@ public class AccountWallet extends Wallet {
     public AccountWallet(final long amount, List<String> pix) {
         super(BankService.ACCOUNT);
         this.pix = pix;
-        addMoney(amount, "Valor de criação da conta");
-    }
-
-    public void addMoney(final long amount, final String description){
-        // Agora, este método cria o dinheiro e já o registra na própria carteira
-        var moneyList = generateMoney(amount);
-        super.addMoney(moneyList, getService(), description);
+        // Usa o novo método "deposit" da classe Wallet
+        deposit(amount, "Valor de criação da conta");
     }
 
     @Override

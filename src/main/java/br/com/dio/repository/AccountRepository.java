@@ -1,3 +1,5 @@
+// Em AccountRepository.java - CÓDIGO CORRIGIDO
+
 package br.com.dio.repository;
 
 import br.com.dio.exception.AccountNotFoundException;
@@ -13,7 +15,8 @@ public class AccountRepository {
 
     private final List<AccountWallet> accounts = new ArrayList<>();
 
-    public AccountWallet create(final List<String> pix, final long initialFunds){
+    public AccountWallet create(final List<String> pix, final long initialFunds) {
+        // ... (seu método create continua igual, sem alterações) ...
         if(!accounts.isEmpty()){
             var pixInUse = accounts.stream().flatMap(a -> a.getPix().stream()).toList();
 
@@ -29,32 +32,38 @@ public class AccountRepository {
         return newAccount;
     }
 
-    public void deposit(final String pix, final long fundsAmount){
+    public void deposit(final String pix, final long fundsAmount) {
         var target = findByPix(pix);
-        target.addMoney(fundsAmount, "depósito");
+        // Usa o novo método seguro da Wallet
+        target.deposit(fundsAmount, "Depósito");
     }
 
-    public long withDraw(final String pix, final long amount){
+    public void withDraw(final String pix, final long amount) {
         var source = findByPix(pix);
         checkFundsForTransaction(source, amount);
-        source.reduceMoney(amount);
-        return amount;
+        // Usa o novo método que registra a transação
+        source.withdraw(amount, "Saque");
     }
 
-    public void transferMoney (final String sourcePix, final String targetPix, final long amount) {
+    public void transferMoney(final String sourcePix, final String targetPix, final long amount) {
         var source = findByPix(sourcePix);
         checkFundsForTransaction(source, amount);
         var target = findByPix(targetPix);
-        var message = "Pix enviado! Remetente:" + sourcePix + "\nDestinatário:" + targetPix + ".";
-        target.addMoney(source.reduceMoney(amount), source.getService(), message);
+
+        // Passo 1: Saca da origem (isso já registra a transação de débito)
+        var moneyToMove = source.withdraw(amount, "Transferência enviada para PIX: " + targetPix);
+
+        // Passo 2: Deposita no destino (isso já registra a transação de crédito)
+        target.receive(moneyToMove, "Transferência recebida do PIX: " + sourcePix);
     }
 
-    public AccountWallet findByPix(final String pix){
+    public AccountWallet findByPix(final String pix) {
+        // ... (seu método findByPix continua igual, sem alterações) ...
         return accounts.stream().filter(a -> a.getPix().contains(pix))
                 .findFirst().orElseThrow(()-> new AccountNotFoundException("A conta com esta chave pix: " + pix + " não existe ou foi excluída."));
     }
 
-    public List<AccountWallet> list(){
+    public List<AccountWallet> list() {
         return this.accounts;
     }
 }

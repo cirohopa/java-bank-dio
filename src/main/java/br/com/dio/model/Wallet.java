@@ -1,3 +1,5 @@
+// Em Wallet.java - CÓDIGO CORRIGIDO E FINALIZADO
+
 package br.com.dio.model;
 
 import lombok.Getter;
@@ -13,7 +15,6 @@ public abstract class Wallet {
     @Getter
     private final BankService service;
     protected final List<Money> money;
-    // 1. ADICIONE a lista de histórico aqui
     private final List<MoneyAudit> financialTransactions = new ArrayList<>();
 
     public Wallet(BankService serviceType) {
@@ -21,32 +22,47 @@ public abstract class Wallet {
         this.money = new ArrayList<>();
     }
 
-    // 2. SIMPLIFIQUE a geração de dinheiro
-    protected List<Money> generateMoney(final long amount){
-        return Stream.generate(Money::new).limit(amount).toList();
-    }
-
-    public long getFunds(){
+    public long getFunds() {
         return money.size();
     }
 
-    // 3. CORRIJA o método addMoney para registrar a transação na carteira
-    public void addMoney(final List<Money> money, final BankService service, final String description){
-        var history = new MoneyAudit(UUID.randomUUID(), service, description, OffsetDateTime.now());
-        this.financialTransactions.add(history); // Adiciona ao histórico da CARTEIRA
-        this.money.addAll(money);
+    public List<MoneyAudit> getFinancialTransactions() {
+        return this.financialTransactions;
     }
 
-    public List<Money> reduceMoney(final long amount) {
+    /**
+     * NOVO MÉTODO: Para criar dinheiro do zero (depósitos, criação de conta).
+     * Ele gera o dinheiro e já registra a transação.
+     */
+    public void deposit(long amount, String description) {
+        var moneyList = Stream.generate(Money::new).limit(amount).toList();
+        var history = new MoneyAudit(UUID.randomUUID(), this.service, description, OffsetDateTime.now());
+        this.financialTransactions.add(history);
+        this.money.addAll(moneyList);
+    }
+
+    /**
+     * NOVO MÉTODO: Para receber dinheiro que já existe (transferências).
+     */
+    public void receive(List<Money> moneyToReceive, String description) {
+        var history = new MoneyAudit(UUID.randomUUID(), this.service, description, OffsetDateTime.now());
+        this.financialTransactions.add(history);
+        this.money.addAll(moneyToReceive);
+    }
+
+    /**
+     * NOVO MÉTODO: Para remover dinheiro (saques, transferências).
+     * Ele remove o dinheiro, REGISTRA a transação e retorna o dinheiro removido.
+     */
+    public List<Money> withdraw(long amount, String description) {
         List<Money> toRemove = new ArrayList<>();
-        for (int i = 0; i < amount; i++){
+        for (int i = 0; i < amount; i++) {
             toRemove.add(this.money.removeFirst());
         }
-        return toRemove;
-    }
 
-    // 4. ATUALIZE este método para retornar o histórico da carteira
-    public List<MoneyAudit> getFinancialTransactions (){
-        return this.financialTransactions;
+        var history = new MoneyAudit(UUID.randomUUID(), this.service, description, OffsetDateTime.now());
+        this.financialTransactions.add(history);
+
+        return toRemove;
     }
 }
