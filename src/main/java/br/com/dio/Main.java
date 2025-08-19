@@ -24,20 +24,20 @@ public class Main {
 
         while(true){
 
-            System.out.println("Selecione a operação desejada:");
+            System.out.println("Selecione a operacao desejada:");
             System.out.println("1 - Criar conta");
             System.out.println("2 - Criar um investimento");
             System.out.println("3 - Fazer um investimento");
             System.out.println("4 - Depositar na conta");
             System.out.println("5 - Sacar da conta");
-            System.out.println("6 - Transferência entre contas");
+            System.out.println("6 - Transferencia entre contas");
             System.out.println("7 - Investir");
             System.out.println("8 - Sacar investimento");
             System.out.println("9 - Listar contas");
             System.out.println("10 - Listar investimentos");
             System.out.println("11 - Listar carteiras de investimento");
             System.out.println("12- Atualizar investimentos");
-            System.out.println("13 - Histórico da conta");
+            System.out.println("13 - Historico da conta");
             System.out.println("14 - Sair");
 
             var opc = sc.nextInt();
@@ -57,11 +57,11 @@ public class Main {
                 case 11-> investmentRepository.listWallets().forEach(System.out::println);
                 case 12-> {
                     investmentRepository.updateAmount();
-                    System.out.println("Atualização dos investimentos concluída");
+                    System.out.println("Atualizacao dos investimentos concluida");
                 }
                 case 13-> checkHistory();
                 case 14-> System.exit(0);
-                default-> System.out.println("Opção inválida!");
+                default-> System.out.println("Opcao invalida!");
 
             }
         }
@@ -70,7 +70,7 @@ public class Main {
     private static void createAccount(){
         System.out.println("Informe as chaves pix, separadas por ; (ponto e vírgula)");
         var pix = Arrays.stream(sc.nextLine().split(";")).toList();
-        System.out.println("Digite o valor de depósito inicial:");
+        System.out.println("Digite o valor de deposito inicial:");
         var amount = Long.parseLong(sc.nextLine());
         var wallet = accountRepository.create(pix, amount);
         System.out.println("Conta criada: " + wallet);
@@ -79,21 +79,21 @@ public class Main {
     private static void createInvestment(){
         System.out.println("Informe a taxa do investimento");
         var tax = sc.nextInt();
-        System.out.println("Digite o valor de depósito inicial:");
+        System.out.println("Digite o valor de deposito inicial:");
         var initialFunds = sc.nextLong();
         var investment = investmentRepository.create(tax, initialFunds);
         System.out.println("Investimento criado: " + investment);
     }
 
     private static void deposit(){
-        System.out.println("Digite a chave pix para depósito: ");
+        System.out.println("Digite a chave pix para deposito: ");
         var pix = sc.next();
-        System.out.println("Digite o valor do depósito: ");
+        System.out.println("Digite o valor do deposito: ");
         var amount = sc.nextLong();
 
         try {
             accountRepository.deposit(pix,amount);
-            System.out.println("Depósito realizado com sucesso!");
+            System.out.println("Deposito realizado com sucesso!");
         } catch (AccountNotFoundException ex){
             System.out.println(ex.getMessage());
         }
@@ -119,7 +119,7 @@ public class Main {
         var source = sc.next();
         System.out.println("Digite a chave pix da conta de destino: ");
         var target = sc.next();
-        System.out.println("Digite o valor do depósito: ");
+        System.out.println("Digite o valor do deposito: ");
         var amount = sc.nextLong();
 
         try {
@@ -178,7 +178,7 @@ public class Main {
             var audit = wallet.getFinancialTransactions();
 
             if (audit.isEmpty()) {
-                System.out.println("Não há transações no histórico desta conta.");
+                System.out.println("Nao ha transacoes no historico desta conta.");
             } else {
                 System.out.println("---- EXTRATO DA CONTA: " + pix + " ----");
                 audit.forEach(System.out::println); // LINHA ADICIONADA PARA IMPRIMIR
